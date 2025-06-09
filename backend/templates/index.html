@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image OCR + NLP</title>
+</head>
+<body>
+    <h1>Upload an Image for OCR + NLP</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <input type="submit" value="Upload and Process">
+    </form>
+
+    {% if text %}
+        <h2>Extracted Text</h2>
+        <pre>{{ text }}</pre>
+
+        <h2>Named Entities</h2>
+        <ul>
+            {% for ent, label in entities %}
+                <li><strong>{{ label }}</strong>: {{ ent }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
