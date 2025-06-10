@@ -1,25 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Image OCR + NLP</title>
+    <meta charset="UTF-8" />
+    <title>Bank Statement OCR</title>
 </head>
 <body>
-    <h1>Upload an Image for OCR + NLP</h1>
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="image" required>
-        <input type="submit" value="Upload and Process">
+    <h1>Upload Bank Statement Screenshot</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/png, image/jpeg" required />
+        <button type="submit">Upload & Extract</button>
     </form>
 
-    {% if text %}
-        <h2>Extracted Text</h2>
-        <pre>{{ text }}</pre>
+    {% if image_filename %}
+        <h2>Uploaded Image:</h2>
+        <img src="{{ url_for('static', filename='uploads/' + image_filename) }}" alt="Uploaded Image" style="max-width: 400px; border: 1px solid #ddd;" />
+    {% endif %}
 
-        <h2>Named Entities</h2>
-        <ul>
-            {% for ent, label in entities %}
-                <li><strong>{{ label }}</strong>: {{ ent }}</li>
-            {% endfor %}
-        </ul>
+    {% if transactions %}
+        <h2>Extracted Transactions:</h2>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Merchant</th>
+                    <th>Amount ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in transactions %}
+                <tr>
+                    <td>{{ txn.date }}</td>
+                    <td>{{ txn.merchant }}</td>
+                    <td style="text-align:right;">{{ "%.2f"|format(txn.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 </body>
 </html>
