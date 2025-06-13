@@ -22,6 +22,9 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.route('/download-report', methods=['GET'])
+def download_report():
+    return send_from_directory(directory='static', path='report.pdf', as_attachment=True)
 
 def generate_tax_pdf(transactions, output_path='static/report.pdf'):
     pdf = FPDF()

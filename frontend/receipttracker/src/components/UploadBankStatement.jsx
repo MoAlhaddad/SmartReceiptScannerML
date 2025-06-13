@@ -68,10 +68,9 @@ export default function UploadBankStatement() {
       {pdfUrl && (
         <div className="mt-6">
           <a
-            href={`http://127.0.0.1:5000${pdfUrl}`}
-            target="_blank"
-            rel="noopener noreferrer"
+             href="http://127.0.0.1:5000/download-report"
             className="text-blue-600 underline"
+            download="Tax_Report.pdf"
           >
             📄 Download Tax Report PDF
           </a>
