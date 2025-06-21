@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function UploadBankStatement() {
+export default function UploadBankStatement({ onSuccess }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
@@ -46,6 +46,8 @@ export default function UploadBankStatement() {
       const data = await res.json();
       setTransactions(data.transactions || []);
       setPdfUrl("http://127.0.0.1:5000" + data.pdf_url);
+       // ✅ Pass transactions up to parent
+    if (onSuccess) onSuccess(data.transactions || []);
     } catch (err) {
       console.error("Upload error:", err);
     } finally {

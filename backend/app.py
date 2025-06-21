@@ -118,7 +118,6 @@ def parse_transaction_line(line):
         'amount': amount
     }
 
-
 def classify_transaction(merchant):
     keywords = {
         "uber": "Transportation",
@@ -129,12 +128,23 @@ def classify_transaction(merchant):
         "coursera": "Education",
         "airbnb": "Business Travel",
         "amazon": "Business Expense",
+        "itunes": "Software Subscriptions",
+        "apple": "Software Subscriptions",
+        "google": "Software Subscriptions",
+        "gstorage": "Software Subscriptions",
+        "g suite": "Software Subscriptions",
+        "zoom": "Software Subscriptions",
+        "dropbox": "Software Subscriptions",
+        "adobe": "Software Subscriptions",
+        "notion": "Software Subscriptions",
     }
 
     merchant_lower = merchant.lower()
+
     for keyword, category in keywords.items():
         if keyword in merchant_lower:
             return category
+
     return "Uncategorized"
 
 
