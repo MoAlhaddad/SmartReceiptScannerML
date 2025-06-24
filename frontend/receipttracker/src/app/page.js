@@ -1,12 +1,23 @@
-'use client';
+'use client'
 
-import UploadBankStatement from '@/components/UploadBankStatement';
+import Layout from '@/components/Layout'
+import UploadBankStatement from '@/components/UploadBankStatement'
 
 export default function Home() {
   return (
-    <main className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-md mt-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">Bank Statement OCR</h1>
+    <Layout stickyNavbar={false}>
+      {/* Hero Section */}
+      <section className="text-center space-y-4">
+        <h1 className="text-4xl font-bold text-foreground">
+          Welcome to SmartReceipt
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
+          Upload your bank statement or receipt image. We'll scan it and extract deductible transactions to help estimate your taxes.
+        </p>
+      </section>
+
+      {/* Upload Component */}
       <UploadBankStatement />
-    </main>
-  );
+    </Layout>
+  )
 }

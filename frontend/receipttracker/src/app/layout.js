@@ -1,42 +1,24 @@
-import './globals.css';
+import './globals.css'
+import { Inter } from 'next/font/google'
+import Navbar from '@/components/Navbar'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Bank Statement OCR & Tax Calculator',
-  description: 'Upload bank statements, extract transactions, and calculate taxes.',
-};
+  title: 'SmartReceipt Scanner',
+  description: 'AI-powered tax deduction estimator from your receipts',
+}
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="bg-gray-50 min-h-screen text-gray-900 font-sans">
-        <header className="bg-white shadow-md p-4 mb-8">
-          <nav className="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight">
-              Bank OCR & Tax
-            </h1>
-            <div className="space-x-6 text-lg font-medium text-blue-600">
-              <a
-                href="/"
-                className="hover:text-blue-800 transition-colors duration-200"
-              >
-                Home
-              </a>
-              <a
-                href="/results"
-                className="hover:text-blue-800 transition-colors duration-200"
-              >
-                Results
-              </a>
-            </div>
-          </nav>
-        </header>
-
-        <main className="min-h-[70vh]">{children}</main>
-
-        <footer className="text-center p-6 mt-16 text-gray-500 text-sm select-none">
-          &copy; 2025 Bank OCR & Tax App
-        </footer>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-background text-foreground`}>
+        {/* Pass sticky=true or false here */}
+        <Navbar sticky={false} />
+        <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+          {children}
+        </main>
       </body>
     </html>
-  );
+  )
 }
