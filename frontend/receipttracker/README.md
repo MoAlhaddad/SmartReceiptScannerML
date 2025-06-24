@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Bank Statement Tax Deduction Extractor
+
+This project is a web application that allows users to upload bank statement images, extracts transactions using OCR, classifies them into tax deductible categories, and calculates estimated taxes based on monthly revenue and expenses. Users can upload monthly bank statements separately and get detailed tax summaries with downloadable PDF reports.
+
+---
+
+## Features
+
+- Upload bank statement images (supports multiple months separately)
+- OCR extraction of transaction details using Tesseract
+- Automatic classification of transactions into categories (Transportation, Software, Office Supplies, etc.)
+- Handles uncategorized transactions for review
+- Tax calculations with state-based tax rates
+- Downloadable PDF tax write-off report
+- Clear and reset data option
+
+---
+
+## Tech Stack
+
+- Backend: Flask (Python), Tesseract OCR, FPDF (for PDFs)
+- Frontend: React (Next.js), dynamic imports for upload and summary components
+- Storage: LocalStorage on frontend to keep transactions per month
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Python 3.10+ installed
+- Tesseract OCR installed and added to your system PATH  
+  (Windows example: `C:\Program Files\Tesseract-OCR\tesseract.exe`)  
+  [Tesseract Installation Guide](https://github.com/tesseract-ocr/tesseract)
+
+- Node.js 18+ installed (for frontend)
+
+---
+
+### Backend Setup
+
+1. Clone the repo and navigate to the backend folder (or root if combined).
+
+2. Install Python dependencies:
 
 ```bash
+pip install -r requirements.txt
+Run the Flask backend server:
+
+bash
+Copy
+Edit
+python app.py
+By default, it will run on http://localhost:5000
+
+Frontend Setup
+Navigate to the frontend directory.
+
+Install npm dependencies:
+
+bash
+Copy
+Edit
+npm install
+Run the development server:
+
+bash
+Copy
+Edit
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The frontend will run on http://localhost:3000 and communicate with the backend API.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Usage
+Upload bank statements month by month via the upload interface.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Review extracted transactions and categorized expenses.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Enter monthly revenue and select your state to estimate taxes.
 
-## Learn More
+Download detailed tax summary reports as PDFs.
 
-To learn more about Next.js, take a look at the following resources:
+Clear all uploaded data if needed.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Notes
+Make sure Tesseract OCR is properly installed and configured.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The backend classifies transactions based on merchant keywords; uncategorized transactions are listed for manual review.
 
-## Deploy on Vercel
+State tax rates are used for better accuracy in tax estimation.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+License
+This project is open source and available under the MIT License.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contact
+For questions or feedback, please contact [mohamadalhaddad25@gmail.com].
+
+yaml
+Copy
+Edit
+
+---
+
+If you want, I can generate the `requirements.txt` for the backend as well, or help customize the R

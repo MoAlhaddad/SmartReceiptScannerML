@@ -22,7 +22,7 @@ export default function Navbar({ sticky = true }) {
         {/* Desktop Links */}
         <div className="hidden md:flex space-x-6 text-sm">
           <NavLink href="/">Home</NavLink>
-          <NavLink href="/results">Results</NavLink>
+          <NavLink href="/results">Check Your Taxes</NavLink>
           <NavLink href="#about">About</NavLink>
         </div>
 
@@ -43,7 +43,7 @@ export default function Navbar({ sticky = true }) {
             Home
           </NavLink>
           <NavLink href="/results" onClick={() => setMenuOpen(false)}>
-            Results
+            Check Your Taxes
           </NavLink>
           <NavLink href="#about" onClick={() => setMenuOpen(false)}>
             About
