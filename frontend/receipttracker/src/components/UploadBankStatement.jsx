@@ -2,11 +2,38 @@
 
 import { useState, useRef } from 'react';
 
-export default function UploadBankStatement({ onSuccess }) {
+function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 max-w-sm w-full shadow-lg">
+        <h3 className="text-lg font-semibold mb-4">{title}</h3>
+        <p className="mb-6">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function UploadBankStatement({ onSuccess, onClear }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
   const [transactions, setTransactions] = useState([]);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -64,6 +91,19 @@ export default function UploadBankStatement({ onSuccess }) {
     }
   };
 
+  // Modal open/close
+  const openConfirmModal = () => setIsConfirmOpen(true);
+  const closeConfirmModal = () => setIsConfirmOpen(false);
+
+  const handleClearConfirmed = () => {
+    setFile(null);
+    setPdfUrl('');
+    setTransactions([]);
+    setIsConfirmOpen(false);
+    if (onClear) onClear();
+    if (fileInputRef.current) fileInputRef.current.value = null; // reset input UI
+  };
+
   return (
     <div className="p-6 border rounded-xl shadow-md bg-white dark:bg-zinc-900 max-w-2xl mx-auto space-y-4">
       <h2 className="text-2xl font-semibold text-center">📤 Upload Bank Statement</h2>
@@ -111,6 +151,25 @@ export default function UploadBankStatement({ onSuccess }) {
           </ul>
         </div>
       )}
+
+      {transactions.length > 0 && (
+        <div className="text-center mt-6">
+          <button
+            onClick={openConfirmModal}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+          >
+            Clear Uploaded Data
+          </button>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        title="Confirm Clear Uploads"
+        message="Are you sure you want to clear all uploaded transactions? This cannot be undone."
+        onConfirm={handleClearConfirmed}
+        onCancel={closeConfirmModal}
+      />
     </div>
   );
 }

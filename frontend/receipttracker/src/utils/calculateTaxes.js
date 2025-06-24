@@ -1,71 +1,80 @@
 export function calculateTaxes({ revenue, deductions, state }) {
-  const taxableIncome = revenue - deductions;
+  const taxableIncome = revenue - deductions; // yearly inputs assumed
 
-const fedRate = 0.15; // Simplified flat rate
-const stateRates = {
-  AL: 0.04,  // Alabama
-  AK: 0.00,  // Alaska (no state sales tax, but local taxes may apply)
-  AZ: 0.056, // Arizona
-  AR: 0.065, // Arkansas
-  CA: 0.0725,// California
-  CO: 0.029, // Colorado
-  CT: 0.0635,// Connecticut
-  DE: 0.00,  // Delaware
-  FL: 0.06,  // Florida
-  GA: 0.04,  // Georgia
-  HI: 0.04,  // Hawaii
-  ID: 0.06,  // Idaho
-  IL: 0.0625,// Illinois
-  IN: 0.07,  // Indiana
-  IA: 0.06,  // Iowa
-  KS: 0.065, // Kansas
-  KY: 0.06,  // Kentucky
-  LA: 0.0445,// Louisiana
-  ME: 0.055, // Maine
-  MD: 0.06,  // Maryland
-  MA: 0.0625,// Massachusetts
-  MI: 0.06,  // Michigan
-  MN: 0.0688,// Minnesota
-  MS: 0.07,  // Mississippi
-  MO: 0.0425,// Missouri
-  MT: 0.00,  // Montana (no general sales tax)
-  NE: 0.055, // Nebraska
-  NV: 0.0685,// Nevada
-  NH: 0.00,  // New Hampshire
-  NJ: 0.0663,// New Jersey
-  NM: 0.0513,// New Mexico
-  NY: 0.04,  // New York
-  NC: 0.0475,// North Carolina
-  ND: 0.05,  // North Dakota
-  OH: 0.0575,// Ohio
-  OK: 0.045, // Oklahoma
-  OR: 0.00,  // Oregon
-  PA: 0.06,  // Pennsylvania
-  RI: 0.07,  // Rhode Island
-  SC: 0.06,  // South Carolina
-  SD: 0.045, // South Dakota
-  TN: 0.07,  // Tennessee
-  TX: 0.0625,// Texas
-  UT: 0.061, // Utah
-  VT: 0.06,  // Vermont
-  VA: 0.053, // Virginia
-  WA: 0.065, // Washington
-  WV: 0.06,  // West Virginia
-  WI: 0.05,  // Wisconsin
-  WY: 0.04,  // Wyoming
-  DC: 0.06   // District of Columbia
-};
+  const federalBrackets = [
+    { cap: 11600, rate: 0.10 },
+    { cap: 47150, rate: 0.12 },
+    { cap: 100525, rate: 0.22 },
+    { cap: 191950, rate: 0.24 },
+    { cap: 243725, rate: 0.32 },
+    { cap: 609350, rate: 0.35 },
+    { cap: Infinity, rate: 0.37 },
+  ];
 
- const stateRate = stateRates[state] ?? 0
+  let federalTax = 0;
+  let remaining = taxableIncome;
+  let previousCap = 0;
 
-  const federalTax = taxableIncome * fedRate
-  const stateTax = taxableIncome * stateRate
-  const totalTax = federalTax + stateTax
+  for (const bracket of federalBrackets) {
+    if (taxableIncome <= previousCap) break;
+
+    const incomeInBracket = Math.min(bracket.cap - previousCap, remaining);
+    federalTax += incomeInBracket * bracket.rate;
+    remaining -= incomeInBracket;
+    previousCap = bracket.cap;
+  }
+
+  const caBrackets = [
+    { cap: 10100, rate: 0.01 },
+    { cap: 23942, rate: 0.02 },
+    { cap: 37788, rate: 0.04 },
+    { cap: 52455, rate: 0.06 },
+    { cap: 66295, rate: 0.08 },
+    { cap: 338639, rate: 0.093 },
+    { cap: 406364, rate: 0.103 },
+    { cap: 677275, rate: 0.113 },
+    { cap: 1000000, rate: 0.123 },
+    { cap: Infinity, rate: 0.133 },
+  ];
+
+  const stateRates = {
+    AL: 0.04, AK: 0.0, AZ: 0.056, AR: 0.065,
+    CO: 0.029, CT: 0.0635, DE: 0.0, FL: 0.06, GA: 0.04,
+    HI: 0.04, ID: 0.06, IL: 0.0625, IN: 0.07, IA: 0.06,
+    KS: 0.065, KY: 0.06, LA: 0.0445, ME: 0.055, MD: 0.06,
+    MA: 0.0625, MI: 0.06, MN: 0.0688, MS: 0.07, MO: 0.0425,
+    MT: 0.0, NE: 0.055, NV: 0.0685, NH: 0.0, NJ: 0.0663,
+    NM: 0.0513, NY: 0.04, NC: 0.0475, ND: 0.05, OH: 0.0575,
+    OK: 0.045, OR: 0.0, PA: 0.06, RI: 0.07, SC: 0.06,
+    SD: 0.045, TN: 0.07, TX: 0.0625, UT: 0.061, VT: 0.06,
+    VA: 0.053, WA: 0.065, WV: 0.06, WI: 0.05, WY: 0.04, DC: 0.06
+  };
+
+  let stateTax = 0;
+
+  if (state === 'CA') {
+    remaining = taxableIncome;
+    previousCap = 0;
+
+    for (const bracket of caBrackets) {
+      if (taxableIncome <= previousCap) break;
+
+      const incomeInBracket = Math.min(bracket.cap - previousCap, remaining);
+      stateTax += incomeInBracket * bracket.rate;
+      remaining -= incomeInBracket;
+      previousCap = bracket.cap;
+    }
+  } else {
+    const flatRate = stateRates[state] ?? 0;
+    stateTax = taxableIncome * flatRate;
+  }
+
+  const totalTax = federalTax + stateTax;
 
   return {
     taxableIncome,
     federalTax,
     stateTax,
     totalTax,
-  }
+  };
 }

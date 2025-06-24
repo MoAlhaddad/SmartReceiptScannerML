@@ -34,9 +34,13 @@ export default function TaxInputForm({ onSubmit }) {
         📊 Monthly Tax Info
       </h2>
 
+      <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+        Enter your <strong>monthly revenue</strong>. We'll estimate your taxes based on a full year's income and deductions.
+      </p>
+
       <div>
-        <label htmlFor="revenue" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-          Monthly Revenue ($)
+        <label htmlFor="revenue" className="text-sm text-gray-600 mb-1 block">
+          Revenue for this month ($)
         </label>
         <input
           id="revenue"
@@ -52,7 +56,7 @@ export default function TaxInputForm({ onSubmit }) {
 
       <div>
         <label htmlFor="state" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-          State
+          State of Residence
         </label>
         <select
           id="state"
@@ -72,8 +76,12 @@ export default function TaxInputForm({ onSubmit }) {
         type="submit"
         className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-xl transition"
       >
-        💰 Calculate Taxes
+        💰 Estimate My Taxes
       </button>
+
+      <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-2">
+        We'll calculate your annual tax based on this monthly input and display a monthly breakdown.
+      </p>
     </form>
   )
 }

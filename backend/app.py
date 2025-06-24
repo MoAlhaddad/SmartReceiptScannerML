@@ -3,6 +3,7 @@ import os
 import cv2
 import pytesseract
 import requests
+import json
 from io import BytesIO
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory
@@ -11,7 +12,7 @@ from datetime import datetime, date
 from fpdf import FPDF
 
 # Configure Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 # Setup Flask app
 app = Flask(__name__)
@@ -21,6 +22,22 @@ CORS(app)
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+UNCATEGORIZED_FILE = 'uncategorized_merchants.json'
+
+# === Helper to Save Uncategorized Merchants ===
+def save_uncategorized_merchant(merchant):
+    merchant = merchant.strip()
+    try:
+        with open(UNCATEGORIZED_FILE, 'r') as f:
+            uncategorized = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        uncategorized = []
+
+    if merchant not in uncategorized:
+        uncategorized.append(merchant)
+        with open(UNCATEGORIZED_FILE, 'w') as f:
+            json.dump(uncategorized, f, indent=2)
 
 @app.route('/download-report', methods=['GET'])
 def download_report():
@@ -38,7 +55,6 @@ def generate_tax_pdf(transactions, output_path='static/report.pdf'):
     pdf.cell(0, 10, f"Generated on: {date.today().strftime('%B %d, %Y')}", ln=True)
     pdf.ln(10)
 
-    # Table Header
     pdf.set_font("Arial", "B", 12)
     pdf.cell(40, 10, "Date")
     pdf.cell(60, 10, "Merchant")
@@ -51,7 +67,7 @@ def generate_tax_pdf(transactions, output_path='static/report.pdf'):
 
     for tx in transactions:
         pdf.cell(40, 10, tx['date'])
-        pdf.cell(60, 10, tx['merchant'][:30])  # truncate merchant name
+        pdf.cell(60, 10, tx['merchant'][:30])
         pdf.cell(30, 10, f"${tx['amount']:.2f}")
         pdf.cell(50, 10, tx['category'], ln=True)
 
@@ -74,44 +90,34 @@ def generate_tax_pdf(transactions, output_path='static/report.pdf'):
     pdf.output(output_path)
     return output_path
 
-
 def preprocess_image(image_path):
     img = cv2.imread(image_path)
-
     scale_percent = 200
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     resized = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
-
     gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
-
     processed_path = os.path.splitext(image_path)[0] + "_processed.png"
     cv2.imwrite(processed_path, blurred)
     return processed_path
-
 
 def parse_transaction_line(line):
     pattern = r'(\d{2}/\d{2}/\d{4}).*?([A-Za-z0-9 *.\-/]+?)\s+(-?\(?\$?[\d,]+\.\d{2}\)?)'
     match = re.search(pattern, line)
     if not match:
         return None
-
     date_str, merchant, amount_str = match.groups()
-
     amount_str = amount_str.replace('(', '-').replace(')', '')
     amount_str = re.sub(r'[^\d\-.]', '', amount_str)
-
     try:
         amount = float(amount_str)
     except ValueError:
         amount = 0.0
-
     try:
         date_obj = datetime.strptime(date_str, '%m/%d/%Y')
     except ValueError:
         date_obj = None
-
     return {
         'date': date_obj.strftime('%Y-%m-%d') if date_obj else date_str,
         'merchant': merchant.strip(),
@@ -119,34 +125,23 @@ def parse_transaction_line(line):
     }
 
 def classify_transaction(merchant):
-    keywords = {
-        "uber": "Transportation",
-        "lyft": "Transportation",
-        "office depot": "Office Supplies",
-        "home depot": "Office Supplies",
-        "udemy": "Education",
-        "coursera": "Education",
-        "airbnb": "Business Travel",
-        "amazon": "Business Expense",
-        "itunes": "Software Subscriptions",
-        "apple": "Software Subscriptions",
-        "google": "Software Subscriptions",
-        "gstorage": "Software Subscriptions",
-        "g suite": "Software Subscriptions",
-        "zoom": "Software Subscriptions",
-        "dropbox": "Software Subscriptions",
-        "adobe": "Software Subscriptions",
-        "notion": "Software Subscriptions",
-    }
-
     merchant_lower = merchant.lower()
-
-    for keyword, category in keywords.items():
-        if keyword in merchant_lower:
-            return category
-
+    categories = {
+        "Transportation": ["uber", "lyft", "ride", "getaround", "turo"],
+        "Office Supplies": ["office depot", "staples", "home depot", "lowes", "best buy"],
+        "Education": ["udemy", "coursera", "skillshare", "pluralsight", "edx"],
+        "Business Travel": ["airbnb", "hotel", "marriott", "delta", "united", "southwest"],
+        "Business Expense": ["amazon", "costco", "walmart", "target"],
+        "Software Subscriptions": ["itunes", "apple", "google", "gstorage", "g suite", "zoom", "dropbox", "adobe", "notion", "canva", "figma", "microsoft", "intuit"],
+        "Marketing": ["facebook", "meta", "instagram", "google ads", "linkedin", "twitter"],
+        "Meals & Entertainment": ["starbucks", "mcdonalds", "chipotle", "restaurant", "cafe"]
+    }
+    for category, keywords in categories.items():
+        for keyword in keywords:
+            if keyword in merchant_lower:
+                return category
+    save_uncategorized_merchant(merchant)
     return "Uncategorized"
-
 
 def extract_transactions(text):
     transactions = []
@@ -158,15 +153,25 @@ def extract_transactions(text):
             transactions.append(transaction)
     return transactions
 
-
 @app.route('/')
 def home():
     return "Flask Bank Statement OCR API is running."
 
-
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
+
+@app.route('/api/uncategorized-merchants', methods=['GET'])
+def get_uncategorized_merchants():
+    if not os.path.exists('uncategorized.json'):
+        print("No uncategorized.json found.")
+        return jsonify([])
+
+    with open('uncategorized.json', 'r') as f:
+        merchants = json.load(f)
+        print("Returning uncategorized merchants:", merchants)
+
+    return jsonify(merchants)
 
 
 @app.route('/api/upload-from-url', methods=['POST'])
@@ -175,33 +180,25 @@ def upload_from_url():
     image_url = data.get('image_url')
     if not image_url:
         return jsonify({'error': 'No image URL provided'}), 400
-
     try:
         response = requests.get(image_url)
         image = Image.open(BytesIO(response.content))
     except:
         return jsonify({'error': 'Failed to load image from URL'}), 400
-
     temp_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp.png')
     image.save(temp_path)
-
     processed_path = preprocess_image(temp_path)
     config = r'--oem 3 --psm 4 -l eng'
     extracted_text = pytesseract.image_to_string(Image.open(processed_path), config=config)
     extracted_text = re.sub(r'[^\x00-\x7F]+', ' ', extracted_text)
-
     transactions = extract_transactions(extracted_text)
-
-    # ✅ Generate PDF
     pdf_path = os.path.join('static', 'report.pdf')
     generate_tax_pdf(transactions, pdf_path)
-
     return jsonify({
         'raw_text': extracted_text,
         'transactions': transactions,
         'pdf_url': '/static/report.pdf'
     })
-
 
 if __name__ == '__main__':
     app.run(debug=True)
